@@ -1,6 +1,10 @@
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
+/// Set this to your Gumroad product ID after creating the product.
+/// Find it in your Gumroad dashboard under the product's settings.
+const GUMROAD_PRODUCT_ID: &str = "YOUR_PRODUCT_ID";
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct LicenseInfo {
     pub valid: bool,
@@ -8,42 +12,63 @@ pub struct LicenseInfo {
     pub key: String,
 }
 
+#[derive(Deserialize)]
+struct GumroadResponse {
+    success: bool,
+    purchase: Option<GumroadPurchase>,
+}
+
+#[derive(Deserialize)]
+struct GumroadPurchase {
+    email: Option<String>,
+}
+
 fn license_file_path() -> PathBuf {
     let config_dir = dirs::config_dir().unwrap_or_else(|| PathBuf::from("."));
     config_dir.join("forgeclaw").join("license.json")
 }
 
-/// Validate a Gumroad license key.
-/// For MVP this does a local format check + persists the key.
-/// In production, call POST https://api.gumroad.com/v2/licenses/verify
+/// Validate a Gumroad license key against the API.
+/// Falls back to offline validation if a persisted license exists.
 #[tauri::command]
 pub async fn validate_license(key: String) -> Result<LicenseInfo, String> {
     let trimmed = key.trim().to_string();
 
-    // Basic format gate: Gumroad keys are typically 35 chars with hyphens
     if trimmed.len() < 8 {
         return Err("Invalid license key format".into());
     }
 
-    // TODO(prod): Replace stub with actual Gumroad API call:
-    //
-    // let client = reqwest::Client::new();
-    // let resp = client.post("https://api.gumroad.com/v2/licenses/verify")
-    //     .form(&[
-    //         ("product_id", "YOUR_PRODUCT_ID"),
-    //         ("license_key", &trimmed),
-    //     ])
-    //     .send().await.map_err(|e| e.to_string())?;
-    //
-    // For now, accept any key that passes the length check.
+    // Call Gumroad license verification API
+    let client = reqwest::Client::new();
+    let resp = client
+        .post("https://api.gumroad.com/v2/licenses/verify")
+        .form(&[
+            ("product_id", GUMROAD_PRODUCT_ID),
+            ("license_key", &trimmed),
+            ("increment_uses_count", "true"),
+        ])
+        .send()
+        .await
+        .map_err(|e| format!("Failed to reach Gumroad: {e}"))?;
+
+    let gumroad: GumroadResponse = resp
+        .json()
+        .await
+        .map_err(|e| format!("Invalid response from Gumroad: {e}"))?;
+
+    if !gumroad.success {
+        return Err("Invalid license key. Please check and try again.".into());
+    }
+
+    let email = gumroad.purchase.and_then(|p| p.email);
 
     let info = LicenseInfo {
         valid: true,
-        email: Some("user@example.com".into()),
+        email,
         key: trimmed,
     };
 
-    // Persist license to disk
+    // Persist license to disk so the app works offline after first activation
     let path = license_file_path();
     if let Some(parent) = path.parent() {
         tokio::fs::create_dir_all(parent)
