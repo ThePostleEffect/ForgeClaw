@@ -1,6 +1,6 @@
 # ForgeClaw
 
-A premium desktop companion app for [OpenClaw](https://github.com/openclaw/openclaw) — install, manage, and orchestrate 11 specialist AI agents with one click.
+One click. 11 meticulously crafted AI agents, deployed straight to your [OpenClaw](https://github.com/openclaw/openclaw) Gateway. Ready to lighten the load of whatever bottleneck is holding you back.
 
 ![ForgeClaw](ForgeClaw-Logo.png)
 
@@ -12,7 +12,7 @@ A premium desktop companion app for [OpenClaw](https://github.com/openclaw/openc
 
 ## What is ForgeClaw?
 
-ForgeClaw is a Tauri-based desktop app that installs a curated bundle of 11 premium AI agent templates into your OpenClaw workspace. Each agent has a deeply crafted personality (SOUL.md) and configuration (AGENTS.md), designed to work independently or delegate tasks to each other through OpenClaw's multi-agent system.
+ForgeClaw is a desktop app that deploys 11 fully configured, expert AI agents into your OpenClaw workspace. These aren't starter templates — each agent has a meticulously written personality, deep domain knowledge, and battle-tested decision-making logic. They work independently or delegate to each other through OpenClaw's multi-agent system, giving you an entire specialist team in seconds.
 
 ## The Agent Roster
 
@@ -33,7 +33,7 @@ ForgeClaw is a Tauri-based desktop app that installs a curated bundle of 11 prem
 ## Features
 
 - **Soul Chamber UI** — Immersive 3D interface with a glowing orb and orbiting crystal shards representing each agent
-- **One-Click Install** — Copies templates, registers agents with OpenClaw, and configures the subagent allowlist automatically
+- **One-Click Deploy** — All 11 agents registered, configured, and ready to work within your OpenClaw Gateway automatically
 - **License Gate** — Gumroad license key validation for premium access
 - **Dashboard Integration** — Launch the OpenClaw Control UI directly from the app
 - **Update Checker** — Poll for new bundle versions from GitHub
@@ -66,13 +66,10 @@ pnpm tauri build
 ## How It Works
 
 1. **Launch ForgeClaw** — the Soul Chamber renders with 11 crystal shards orbiting a central orb
-2. **Enter your license key** — validates against Gumroad (dev mode: any 8+ character key)
-3. **Click "Install Bundle"** — the app:
-   - Copies SOUL.md + AGENTS.md for each agent to `~/.openclaw/agents/<agent-id>/`
-   - Registers each agent with `openclaw agents add <id> --non-interactive --workspace <path>`
-   - Configures the subagent allowlist so your main agent can delegate to all 11 specialists
-4. **Shards turn green** as each agent installs successfully
-5. **Verify**: Run `openclaw agents list` to see all 12 agents (main + 11 specialists)
+2. **Enter your license key** — validates against Gumroad
+3. **Click "Deploy"** — ForgeClaw pushes all 11 agents into your OpenClaw Gateway, registers them, and configures the subagent allowlist so they can delegate to each other
+4. **Shards turn green** as each agent comes online
+5. **You're done.** Run `openclaw agents list` to see your full specialist team ready to go
 
 ## Project Structure
 
@@ -123,7 +120,7 @@ ForgeClaw/
 ## Security Notes
 
 - The app never exposes network ports — all communication is local via Tauri IPC
-- License keys are validated client-side (Gumroad API integration planned)
+- License keys are validated via the Gumroad API
 - OpenClaw CLI commands are executed through Rust's `std::process::Command` with no shell interpolation
 - File operations are restricted to the OpenClaw workspace directory
 - The CSP policy restricts connections to `self`, `api.gumroad.com`, and `api.github.com`
