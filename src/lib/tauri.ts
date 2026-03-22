@@ -109,3 +109,42 @@ export async function saveSettings(settings: AppSettings): Promise<void> {
 export async function detectOpenclawPath(): Promise<string> {
   return invoke("detect_openclaw_path");
 }
+
+// ── Proposals ──
+
+export interface ProposalReview {
+  agent_id: string;
+  agent_name: string;
+  current_soul: string;
+  proposed_soul: string;
+  reason: string;
+  timestamp: string | null;
+}
+
+export async function listPendingProposals(
+  workspacePath?: string,
+): Promise<ProposalReview[]> {
+  return invoke("list_pending_proposals", {
+    workspacePath: workspacePath ?? null,
+  });
+}
+
+export async function approveProposal(
+  agentId: string,
+  workspacePath?: string,
+): Promise<void> {
+  return invoke("approve_proposal", {
+    agentId,
+    workspacePath: workspacePath ?? null,
+  });
+}
+
+export async function rejectProposal(
+  agentId: string,
+  workspacePath?: string,
+): Promise<void> {
+  return invoke("reject_proposal", {
+    agentId,
+    workspacePath: workspacePath ?? null,
+  });
+}

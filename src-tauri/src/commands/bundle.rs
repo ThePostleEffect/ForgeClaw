@@ -292,6 +292,39 @@ pub async fn install_bundle(
         let _ = configure_subagent_allowlist(&successfully_registered).await;
     }
 
+    // Create ForgeClaw pending proposals directory
+    if let Err(e) = super::specs::ensure_pending_dir(workspace_path.as_deref()).await {
+        eprintln!("Warning: failed to create pending dir: {e}");
+    }
+
+    // Write proposal format documentation for the main agent
+    let forgeclaw_dir = ws.join("forgeclaw");
+    let _ = fs::create_dir_all(&forgeclaw_dir).await;
+    let format_doc = r#"# ForgeClaw Proposal Format
+
+To propose changes to an agent's SOUL.md, write a JSON file to:
+  ~/.openclaw/forgeclaw/pending/<agent-id>.json
+
+The JSON format:
+```json
+{
+  "agent_id": "<agent-id>",
+  "proposed_soul": "<full new SOUL.md content>",
+  "reason": "<human-readable explanation of what changed and why>",
+  "timestamp": "<ISO 8601 timestamp>"
+}
+```
+
+Valid agent IDs: inbox-zero-sentinel, content-forge, personal-cfo, research-raven,
+code-companion, customer-whisperer, meeting-maestro, health-horizon, sales-scout,
+learning-luminary, xemory-keeper
+
+The file will be picked up by ForgeClaw for user review.
+The user will see the current SOUL.md alongside your proposed version and can approve or reject.
+Always write the complete SOUL.md content — not a diff or partial edit.
+"#;
+    let _ = fs::write(forgeclaw_dir.join("PROPOSAL_FORMAT.md"), format_doc).await;
+
     // Build final status
     let updated_registered = get_registered_agents().await;
     let mut installed = Vec::new();

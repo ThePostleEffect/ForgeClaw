@@ -3,19 +3,23 @@ import { motion } from "framer-motion";
 interface HUDProps {
   onInstallBundle: () => void;
   onOpenDashboard: () => void;
+  onAdjustSpecs: () => void;
   templateCount: number;
   installedCount: number;
   installing: boolean;
   licensed: boolean;
+  pendingCount: number;
 }
 
 export default function HUD({
   onInstallBundle,
   onOpenDashboard,
+  onAdjustSpecs,
   templateCount,
   installedCount,
   installing,
   licensed,
+  pendingCount,
 }: HUDProps) {
   const allInstalled = installedCount === templateCount;
 
@@ -52,20 +56,8 @@ export default function HUD({
               letterSpacing: 0.5,
             }}
           >
-            XEMORY
-            <span style={{ color: "#6c5ce7", fontWeight: 300 }}>SYSTEMS</span>
-          </span>
-          <span
-            style={{
-              fontSize: 10,
-              color: "rgba(255,255,255,0.3)",
-              marginLeft: 10,
-              fontWeight: 500,
-              letterSpacing: 1.5,
-              textTransform: "uppercase",
-            }}
-          >
-            Agent Hub
+            FORGE
+            <span style={{ color: "#6c5ce7", fontWeight: 300 }}>CLAW</span>
           </span>
         </div>
 
@@ -197,6 +189,77 @@ export default function HUD({
           Open Dashboard
         </motion.button>
       </motion.div>
+
+      {/* Bottom-left: Adjust Specs link */}
+      {(installedCount > 0 || pendingCount > 0) && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1, duration: 0.8 }}
+          style={{
+            position: "fixed",
+            bottom: 28,
+            left: 28,
+            zIndex: 50,
+          }}
+        >
+          <motion.button
+            whileHover={{ scale: 1.04, x: 2 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={onAdjustSpecs}
+            style={{
+              background: "none",
+              border: "none",
+              color: pendingCount > 0 ? "rgba(108,92,231,0.9)" : "rgba(108,92,231,0.6)",
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+              letterSpacing: 0.3,
+              padding: "8px 0",
+              borderBottom: "1px solid rgba(108,92,231,0.25)",
+              transition: "color 0.2s",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.color = "rgba(108,92,231,1)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.color = pendingCount > 0 ? "rgba(108,92,231,0.9)" : "rgba(108,92,231,0.6)")
+            }
+          >
+            Adjust Agent Specifications
+            {pendingCount > 0 && (
+              <motion.span
+                animate={{
+                  scale: [1, 1.2, 1],
+                  boxShadow: [
+                    "0 0 4px rgba(108,92,231,0.4)",
+                    "0 0 12px rgba(108,92,231,0.8)",
+                    "0 0 4px rgba(108,92,231,0.4)",
+                  ],
+                }}
+                transition={{ duration: 2, repeat: Infinity }}
+                style={{
+                  background: "linear-gradient(135deg, #6c5ce7, #4834d4)",
+                  color: "#fff",
+                  fontSize: 10,
+                  fontWeight: 800,
+                  width: 20,
+                  height: 20,
+                  borderRadius: "50%",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {pendingCount}
+              </motion.span>
+            )}
+          </motion.button>
+        </motion.div>
+      )}
 
       {/* Subtle hint text */}
       <motion.div

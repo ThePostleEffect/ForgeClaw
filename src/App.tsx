@@ -4,6 +4,7 @@ import TemplatePanel from "./components/TemplatePanel";
 import HUD from "./components/HUD";
 import LicenseModal from "./components/LicenseModal";
 import StatusToast from "./components/StatusToast";
+import AgentSpecsPanel from "./components/AgentSpecsPanel";
 import {
   TEMPLATES,
   type AgentTemplate,
@@ -24,6 +25,8 @@ export default function App() {
   >({});
   const [installing, setInstalling] = useState(false);
   const [toast, setToast] = useState<ToastInfo>(null);
+  const [specsOpen, setSpecsOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
 
   // Check license on mount
   useEffect(() => {
@@ -69,6 +72,30 @@ export default function App() {
       refreshBundleStatus();
     }
   }, [licensed, refreshBundleStatus]);
+
+  // Check for pending proposals once on launch
+  useEffect(() => {
+    if (!licensed) return;
+
+    (async () => {
+      try {
+        const { invoke } = await import("@tauri-apps/api/core");
+        const proposals = (await invoke("list_pending_proposals", {
+          workspacePath: null,
+        })) as unknown[];
+        setPendingCount(proposals.length);
+        if (proposals.length > 0) {
+          setToast({
+            message: `You have ${proposals.length} agent adjustment${proposals.length > 1 ? "s" : ""} waiting for review`,
+            type: "info",
+          });
+          setTimeout(() => setToast(null), 5000);
+        }
+      } catch {
+        // Outside Tauri or pending dir doesn't exist yet
+      }
+    })();
+  }, [licensed]);
 
   // Merge statuses into template objects
   const templatesWithStatus = TEMPLATES.map((t) => ({
@@ -276,6 +303,7 @@ export default function App() {
         <HUD
           onInstallBundle={handleInstallBundle}
           onOpenDashboard={handleOpenDashboard}
+          onAdjustSpecs={() => setSpecsOpen(true)}
           templateCount={TEMPLATES.length}
           installedCount={
             Object.values(templateStatuses).filter((s) => s === "installed")
@@ -283,6 +311,7 @@ export default function App() {
           }
           installing={installing}
           licensed={licensed}
+          pendingCount={pendingCount}
         />
       )}
 
@@ -293,6 +322,18 @@ export default function App() {
           onInstall={handleInstallTemplate}
         />
       )}
+
+      <AgentSpecsPanel
+        open={specsOpen}
+        onClose={() => setSpecsOpen(false)}
+        showToast={showToast}
+        onProposalHandled={() => setPendingCount((c) => Math.max(0, c - 1))}
+        installedAgentIds={
+          Object.entries(templateStatuses)
+            .filter(([, s]) => s === "installed")
+            .map(([id]) => id)
+        }
+      />
 
       <StatusToast toast={toast} />
     </>

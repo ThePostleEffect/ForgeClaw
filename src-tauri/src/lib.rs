@@ -1,6 +1,6 @@
 mod commands;
 
-use commands::{agents, bundle, license, settings, updater};
+use commands::{agents, bundle, license, settings, specs, updater};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -21,6 +21,10 @@ pub fn run() {
             settings::get_settings,
             settings::save_settings,
             settings::detect_openclaw_path,
+            specs::read_agent_specs,
+            specs::list_pending_proposals,
+            specs::approve_proposal,
+            specs::reject_proposal,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
