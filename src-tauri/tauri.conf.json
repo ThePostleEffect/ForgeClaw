@@ -1,0 +1,32 @@
+{
+  "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/crates/tauri-config-schema/schema.json",
+  "productName": "XemorySystems Agent Hub",
+  "version": "0.1.0",
+  "identifier": "com.xemorysystems.agent-hub",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420",
+    "beforeDevCommand": "pnpm dev",
+    "beforeBuildCommand": "pnpm build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "XemorySystems Agent Hub",
+        "width": 1200,
+        "height": 800,
+        "resizable": true,
+        "minWidth": 900,
+        "minHeight": 650
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self' 'unsafe-eval' blob: data:; script-src 'self' 'unsafe-eval' blob:; worker-src 'self' blob:; connect-src 'self' https://api.gumroad.com https://api.github.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:"
+    }
+  },
+  "plugins": {
+    "shell": {
+      "open": true
+    }
+  }
+}
