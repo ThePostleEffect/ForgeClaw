@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 /// Set this to your Gumroad product ID after creating the product.
 /// Find it in your Gumroad dashboard under the product's settings.
-const GUMROAD_PRODUCT_ID: &str = "YOUR_PRODUCT_ID";
+const GUMROAD_PRODUCT_ID: &str = "kjwhz";
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct LicenseInfo {
