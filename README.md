@@ -4,6 +4,12 @@ A premium desktop companion app for [OpenClaw](https://github.com/openclaw/openc
 
 ![ForgeClaw](ForgeClaw-Logo.png)
 
+## Screenshots
+
+| Soul Chamber | Agent Detail |
+|---|---|
+| ![Soul Chamber](FG-SS-1.png) | ![Agent Detail](FC-SS-2.png) |
+
 ## What is ForgeClaw?
 
 ForgeClaw is a Tauri-based desktop app that installs a curated bundle of 11 premium AI agent templates into your OpenClaw workspace. Each agent has a deeply crafted personality (SOUL.md) and configuration (AGENTS.md), designed to work independently or delegate tasks to each other through OpenClaw's multi-agent system.
@@ -44,7 +50,7 @@ ForgeClaw is a Tauri-based desktop app that installs a curated bundle of 11 prem
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/ForgeClaw.git
+git clone https://github.com/ThePostleEffect/ForgeClaw.git
 cd ForgeClaw
 
 # Install dependencies
