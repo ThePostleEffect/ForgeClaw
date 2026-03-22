@@ -34,8 +34,8 @@ export default function LicenseModal({ open, onActivated }: LicenseModalProps) {
       }
 
       if (valid) {
-        localStorage.setItem("xemory_license_key", trimmed);
-        localStorage.setItem("xemory_licensed", "true");
+        localStorage.setItem("forgeclaw_license_key", trimmed);
+        localStorage.setItem("forgeclaw_licensed", "true");
         onActivated();
       } else {
         setError("Invalid license key. Please check and try again.");
@@ -227,7 +227,7 @@ export default function LicenseModal({ open, onActivated }: LicenseModalProps) {
                 color: "rgba(255,255,255,0.2)",
               }}
             >
-              Purchase at gumroad.com/xemorysystems &middot; $24.99 one-time
+              Purchase at gumroad.com/forgeclaw &middot; $24.99 one-time
             </p>
           </motion.div>
         </motion.div>

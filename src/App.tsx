@@ -35,7 +35,7 @@ export default function App() {
         } | null;
         setLicensed(info?.valid ?? false);
       } catch {
-        const stored = localStorage.getItem("xemory_licensed");
+        const stored = localStorage.getItem("forgeclaw_licensed");
         setLicensed(stored === "true");
       }
     })();

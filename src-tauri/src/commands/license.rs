@@ -10,7 +10,7 @@ pub struct LicenseInfo {
 
 fn license_file_path() -> PathBuf {
     let config_dir = dirs::config_dir().unwrap_or_else(|| PathBuf::from("."));
-    config_dir.join("xemorysystems").join("license.json")
+    config_dir.join("forgeclaw").join("license.json")
 }
 
 /// Validate a Gumroad license key.

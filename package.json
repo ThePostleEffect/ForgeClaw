@@ -1,8 +1,8 @@
 {
-  "name": "xemorysystems-agent-hub",
+  "name": "forgeclaw",
   "private": true,
   "version": "0.1.0",
-  "description": "XemorySystems Agent Hub – Install and manage premium OpenClaw agent templates",
+  "description": "ForgeClaw – Install and manage premium OpenClaw agent templates",
   "type": "module",
   "scripts": {
     "dev": "vite",

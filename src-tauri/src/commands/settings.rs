@@ -27,7 +27,7 @@ impl Default for AppSettings {
 fn settings_path() -> PathBuf {
     dirs::config_dir()
         .unwrap_or_else(|| PathBuf::from("."))
-        .join("xemorysystems")
+        .join("forgeclaw")
         .join("settings.json")
 }
 

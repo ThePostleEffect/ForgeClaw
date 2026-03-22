@@ -56,7 +56,7 @@ export default function LicenseGate({ onActivated }: Props) {
         </div>
 
         <h1 style={{ fontSize: "1.3rem", marginBottom: "0.4rem" }}>
-          XemorySystems Agent Hub
+          ForgeClaw
         </h1>
         <p
           style={{
@@ -116,7 +116,7 @@ export default function LicenseGate({ onActivated }: Props) {
             color: "var(--text-muted)",
           }}
         >
-          Don't have a key? Purchase the bundle at gumroad.com/xemorysystems
+          Don't have a key? Purchase the bundle at gumroad.com/forgeclaw
         </p>
       </div>
     </div>

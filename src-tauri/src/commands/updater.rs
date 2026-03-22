@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use tokio::fs;
 use tokio::io::AsyncWriteExt;
 
-const GITHUB_REPO: &str = "xemorysystems/openclaw-premium-bundle";
+const GITHUB_REPO: &str = "ThePostleEffect/ForgeClaw";
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ReleaseInfo {
@@ -24,7 +24,7 @@ pub async fn check_for_updates(
     );
 
     let client = reqwest::Client::builder()
-        .user_agent("XemorySystems-AgentHub/0.1")
+        .user_agent("ForgeClaw/0.1")
         .build()
         .map_err(|e| e.to_string())?;
 
@@ -83,7 +83,7 @@ pub async fn check_for_updates(
 #[tauri::command]
 pub async fn download_update(download_url: String) -> Result<String, String> {
     let client = reqwest::Client::builder()
-        .user_agent("XemorySystems-AgentHub/0.1")
+        .user_agent("ForgeClaw/0.1")
         .build()
         .map_err(|e| e.to_string())?;
 
@@ -100,7 +100,7 @@ pub async fn download_update(download_url: String) -> Result<String, String> {
     let bytes = resp.bytes().await.map_err(|e| e.to_string())?;
 
     // Write to temp file
-    let temp_dir = std::env::temp_dir().join("xemorysystems-update");
+    let temp_dir = std::env::temp_dir().join("forgeclaw-update");
     fs::create_dir_all(&temp_dir)
         .await
         .map_err(|e| e.to_string())?;
@@ -136,5 +136,5 @@ pub async fn download_update(download_url: String) -> Result<String, String> {
 pub fn _downloads_dir() -> PathBuf {
     dirs::cache_dir()
         .unwrap_or_else(|| PathBuf::from("."))
-        .join("xemorysystems")
+        .join("forgeclaw")
 }
