@@ -28,7 +28,7 @@ ForgeClaw is a desktop app that deploys 11 fully configured, expert AI agents in
 | **Health Horizon** | Wellness strategist — habit architecture, sleep/movement/nutrition/stress systems |
 | **Sales Scout** | Pipeline builder — prospect research, value-first outreach, deal management |
 | **Learning Luminary** | Adaptive educator — personalized learning paths, spaced repetition, mastery tracking |
-| **Xemory Keeper** | Memory & context — cross-agent knowledge graph, pattern detection, institutional memory |
+| **Memory Keeper** | Memory & context — cross-agent knowledge graph, pattern detection, institutional memory |
 
 ## Features
 
@@ -107,7 +107,7 @@ ForgeClaw/
     ├── health-horizon/
     ├── sales-scout/
     ├── learning-luminary/
-    └── xemory-keeper/
+    └── memory-keeper/
 ```
 
 ## Tech Stack

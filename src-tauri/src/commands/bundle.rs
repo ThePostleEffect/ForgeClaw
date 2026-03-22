@@ -234,7 +234,7 @@ pub async fn install_bundle(
         .output()
         .await;
 
-    if oc_check.is_err() || !oc_check.as_ref().unwrap().status.success() {
+    if oc_check.as_ref().map_or(true, |o| !o.status.success()) {
         return Err("OpenClaw CLI not found in PATH. Install it first: https://docs.openclaw.ai".to_string());
     }
 

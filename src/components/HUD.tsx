@@ -229,7 +229,7 @@ export default function HUD({
               (e.currentTarget.style.color = pendingCount > 0 ? "rgba(108,92,231,0.9)" : "rgba(108,92,231,0.6)")
             }
           >
-            Adjust Agent Specifications
+            Soul Witness
             {pendingCount > 0 && (
               <motion.span
                 animate={{
@@ -278,7 +278,7 @@ export default function HUD({
           pointerEvents: "none",
         }}
       >
-        Click a shard to inspect &middot; Scroll to zoom &middot; Drag to orbit
+        Click a shard to inspect &middot; Click the orb for Soul Witness &middot; Scroll to zoom &middot; Drag to orbit
       </motion.div>
     </>
   );

@@ -28,9 +28,15 @@ export default function LicenseModal({ open, onActivated }: LicenseModalProps) {
           key: trimmed,
         })) as { valid: boolean };
         valid = result.valid;
-      } catch {
-        // Fallback: accept keys >= 8 chars (dev stub)
-        valid = trimmed.length >= 8;
+      } catch (invokeErr) {
+        // Tauri not available — check offline license from localStorage
+        const storedKey = localStorage.getItem("forgeclaw_license_key");
+        valid = !!storedKey && storedKey === trimmed;
+        if (!valid) {
+          setError("Unable to verify license. Please check your connection and try again.");
+          setLoading(false);
+          return;
+        }
       }
 
       if (valid) {

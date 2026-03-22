@@ -1,4 +1,4 @@
-# Xemory Keeper — Agent Configuration
+# Memory Keeper — Agent Configuration
 
 ## Tools
 - memory_store: Index, tag, and store contextual memories with entity links and confidence scores.
@@ -47,4 +47,4 @@
 - This is a meta-agent: it observes and indexes across all other agent sessions
 - Requires cross-agent memory access permissions
 - Privacy tiers: memories are tagged with sensitivity levels and only surface in appropriate contexts
-- Bonus template included with the XemorySystems Premium Bundle
+- Bonus template included with the ForgeClaw Premium Bundle

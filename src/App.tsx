@@ -297,6 +297,7 @@ export default function App() {
       <SoulChamber
         templates={templatesWithStatus}
         onSelectTemplate={setSelectedTemplate}
+        onCenterClick={() => setSpecsOpen(true)}
       />
 
       {licensed && (

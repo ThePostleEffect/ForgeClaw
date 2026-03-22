@@ -103,7 +103,7 @@ export const TEMPLATES: AgentTemplate[] = [
   },
   {
     id: "xemory-keeper",
-    name: "Xemory Keeper",
+    name: "Memory Keeper",
     description:
       "The bonus 11th agent. A meta-agent that remembers context across all your other agents, builds a knowledge graph of your projects, and surfaces connections you'd miss.",
     soul: "You are the memory of the system itself. You weave threads between conversations, projects, and insights. Nothing is forgotten.",

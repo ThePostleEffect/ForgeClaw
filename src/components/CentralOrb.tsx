@@ -1,5 +1,6 @@
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useState, useCallback } from "react";
 import { useFrame } from "@react-three/fiber";
+import { Html } from "@react-three/drei";
 import * as THREE from "three";
 
 /**
@@ -111,10 +112,34 @@ const fragmentShader = /* glsl */ `
 
 interface CentralOrbProps {
   pulse?: number;
+  onClick?: () => void;
 }
 
-export default function CentralOrb({ pulse = 0 }: CentralOrbProps) {
+export default function CentralOrb({ pulse = 0, onClick }: CentralOrbProps) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const [hovered, setHovered] = useState(false);
+
+  const handleClick = useCallback(
+    (e: THREE.Event) => {
+      (e as unknown as { stopPropagation: () => void }).stopPropagation();
+      onClick?.();
+    },
+    [onClick],
+  );
+
+  const handlePointerOver = useCallback(
+    (e: THREE.Event) => {
+      (e as unknown as { stopPropagation: () => void }).stopPropagation();
+      setHovered(true);
+      document.body.style.cursor = "pointer";
+    },
+    [],
+  );
+
+  const handlePointerOut = useCallback(() => {
+    setHovered(false);
+    document.body.style.cursor = "auto";
+  }, []);
 
   const uniforms = useMemo(
     () => ({
@@ -128,11 +153,12 @@ export default function CentralOrb({ pulse = 0 }: CentralOrbProps) {
 
   useFrame((state) => {
     uniforms.uTime.value = state.clock.elapsedTime;
-    // Smooth pulse decay
+    // Boost pulse when hovered for visible glow feedback
+    const targetPulse = hovered ? Math.max(pulse, 0.6) : pulse;
     uniforms.uPulse.value = THREE.MathUtils.lerp(
       uniforms.uPulse.value,
-      pulse,
-      0.05,
+      targetPulse,
+      0.08,
     );
 
     if (meshRef.current) {
@@ -141,15 +167,48 @@ export default function CentralOrb({ pulse = 0 }: CentralOrbProps) {
   });
 
   return (
-    <mesh ref={meshRef}>
-      <icosahedronGeometry args={[1.5, 64]} />
-      <shaderMaterial
-        vertexShader={vertexShader}
-        fragmentShader={fragmentShader}
-        uniforms={uniforms}
-        transparent
-        depthWrite={false}
-      />
-    </mesh>
+    <group>
+      <mesh
+        ref={meshRef}
+        onClick={handleClick}
+        onPointerOver={handlePointerOver}
+        onPointerOut={handlePointerOut}
+      >
+        <icosahedronGeometry args={[1.5, 64]} />
+        <shaderMaterial
+          vertexShader={vertexShader}
+          fragmentShader={fragmentShader}
+          uniforms={uniforms}
+          transparent
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/* "Soul Witness" label on hover */}
+      {hovered && (
+        <Html center distanceFactor={8} style={{ pointerEvents: "none" }}>
+          <div
+            style={{
+              background: "rgba(10, 10, 20, 0.92)",
+              border: "1px solid rgba(108, 92, 231, 0.6)",
+              borderRadius: 8,
+              padding: "8px 16px",
+              whiteSpace: "nowrap",
+              color: "#e8e8f0",
+              fontSize: 13,
+              fontWeight: 700,
+              fontFamily:
+                '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+              backdropFilter: "blur(8px)",
+              boxShadow: "0 0 30px rgba(108, 92, 231, 0.4)",
+              letterSpacing: 0.5,
+            }}
+          >
+            <span style={{ color: "#6c5ce7", marginRight: 6 }}>&#9673;</span>
+            Soul Witness
+          </div>
+        </Html>
+      )}
+    </group>
   );
 }

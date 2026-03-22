@@ -39,7 +39,7 @@ export default function AgentSpecsPanel({
   onProposalHandled,
   installedAgentIds,
 }: AgentSpecsPanelProps) {
-  const [tab, setTab] = useState<"proposals" | "agents">("proposals");
+  const [tab, setTab] = useState<"proposals" | "agents">("agents");
   const [proposals, setProposals] = useState<ProposalReview[]>([]);
   const [selectedProposal, setSelectedProposal] =
     useState<ProposalReview | null>(null);
@@ -51,9 +51,10 @@ export default function AgentSpecsPanel({
   const [agentSoul, setAgentSoul] = useState("");
   const [loadingSoul, setLoadingSoul] = useState(false);
 
-  const installedAgents = TEMPLATES.filter((t) =>
-    installedAgentIds.includes(t.id),
-  );
+  const allAgents = TEMPLATES.map((t) => ({
+    ...t,
+    isInstalled: installedAgentIds.includes(t.id),
+  }));
 
   const fetchProposals = useCallback(async () => {
     setLoading(true);
@@ -63,8 +64,11 @@ export default function AgentSpecsPanel({
         workspacePath: null,
       })) as ProposalReview[];
       setProposals(result);
+      // Set tab based on fresh data
+      setTab(result.length > 0 ? "proposals" : "agents");
     } catch {
       // Outside Tauri or dir doesn't exist
+      setTab("agents");
     } finally {
       setLoading(false);
     }
@@ -75,7 +79,6 @@ export default function AgentSpecsPanel({
       fetchProposals();
       setSelectedProposal(null);
       setSelectedAgentId(null);
-      setTab(proposals.length > 0 ? "proposals" : "agents");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -133,46 +136,47 @@ export default function AgentSpecsPanel({
     ? TEMPLATES.find((t) => t.id === selectedAgentId)
     : null;
 
-  // Determine panel width based on current view
-  const isWide = selectedProposal !== null;
-  const panelWidth = isWide ? 860 : 520;
+  // Wider when reviewing a proposal side-by-side
+  const panelWidth = selectedProposal ? 720 : 420;
 
   return (
     <AnimatePresence>
       {open && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(2,2,8,0.6)",
-            zIndex: 150,
-            backdropFilter: "blur(4px)",
-          }}
-          onClick={onClose}
-        >
+        <>
+          {/* Backdrop */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.92, y: 30 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: "spring", stiffness: 280, damping: 26 }}
-            onClick={(e) => e.stopPropagation()}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            onClick={onClose}
             style={{
-              position: "absolute",
-              left: "50%",
-              top: "50%",
-              transform: "translate(-50%, -50%)",
+              position: "fixed",
+              inset: 0,
+              background: "rgba(2,2,8,0.45)",
+              zIndex: 150,
+              backdropFilter: "blur(3px)",
+            }}
+          />
+
+          {/* Sliding panel from right */}
+          <motion.div
+            initial={{ x: panelWidth + 20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: panelWidth + 20, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 320, damping: 30 }}
+            style={{
+              position: "fixed",
+              top: 0,
+              right: 0,
+              bottom: 0,
               width: panelWidth,
-              maxHeight: "82vh",
               background:
-                "linear-gradient(135deg, rgba(15,12,40,0.95) 0%, rgba(8,8,24,0.98) 100%)",
-              border: "1px solid rgba(108,92,231,0.3)",
-              borderRadius: 20,
-              padding: "32px 28px",
+                "linear-gradient(180deg, rgba(12,10,32,0.97) 0%, rgba(6,6,18,0.98) 100%)",
+              borderLeft: "1px solid rgba(108,92,231,0.25)",
               boxShadow:
-                "0 0 60px rgba(108,92,231,0.15), 0 30px 80px rgba(0,0,0,0.6)",
+                "-20px 0 80px rgba(0,0,0,0.5), -4px 0 30px rgba(108,92,231,0.08)",
+              zIndex: 160,
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
@@ -185,8 +189,9 @@ export default function AgentSpecsPanel({
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                marginBottom: 16,
+                padding: "20px 24px 16px",
                 flexShrink: 0,
+                borderBottom: "1px solid rgba(108,92,231,0.12)",
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -211,20 +216,27 @@ export default function AgentSpecsPanel({
                     &#8592;
                   </motion.button>
                 )}
-                <h2
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 700,
-                    color: "#e8e8f0",
-                    margin: 0,
-                  }}
-                >
-                  {selectedProposal
-                    ? `Review: ${selectedProposal.agent_name}`
-                    : selectedAgentId && selectedAgentTemplate
-                      ? selectedAgentTemplate.name
-                      : "Agent Specifications"}
-                </h2>
+                <div>
+                  <h2
+                    style={{
+                      fontSize: 16,
+                      fontWeight: 700,
+                      color: "#e8e8f0",
+                      margin: 0,
+                    }}
+                  >
+                    {selectedProposal
+                      ? `Review: ${selectedProposal.agent_name}`
+                      : selectedAgentId && selectedAgentTemplate
+                        ? selectedAgentTemplate.name
+                        : "Soul Witness"}
+                  </h2>
+                  {!selectedProposal && !selectedAgentId && (
+                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", marginTop: 2 }}>
+                      {allAgents.filter((a) => a.isInstalled).length} of {allAgents.length} agents deployed
+                    </div>
+                  )}
+                </div>
               </div>
               <motion.button
                 whileHover={{ scale: 1.1 }}
@@ -254,7 +266,7 @@ export default function AgentSpecsPanel({
                 style={{
                   display: "flex",
                   gap: 4,
-                  marginBottom: 16,
+                  padding: "12px 24px 0",
                   flexShrink: 0,
                 }}
               >
@@ -316,254 +328,287 @@ export default function AgentSpecsPanel({
               </div>
             )}
 
-            {/* ═══ PROPOSAL REVIEW VIEW ═══ */}
-            {selectedProposal && (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  flex: 1,
-                  overflow: "hidden",
-                  gap: 16,
-                }}
-              >
-                {/* Reason banner */}
-                <div
-                  style={{
-                    padding: "12px 16px",
-                    background: "rgba(108,92,231,0.08)",
-                    border: "1px solid rgba(108,92,231,0.2)",
-                    borderRadius: 10,
-                    flexShrink: 0,
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      color: "rgba(108,92,231,0.7)",
-                      textTransform: "uppercase",
-                      letterSpacing: 1,
-                      marginBottom: 4,
-                    }}
-                  >
-                    Proposed Change
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 13,
-                      color: "rgba(255,255,255,0.7)",
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    {selectedProposal.reason}
-                  </div>
-                  {selectedProposal.timestamp && (
-                    <div
-                      style={{
-                        fontSize: 10,
-                        color: "rgba(255,255,255,0.2)",
-                        marginTop: 6,
-                      }}
-                    >
-                      {relativeTime(selectedProposal.timestamp)}
-                    </div>
-                  )}
-                </div>
+            {/* Scrollable content area */}
+            <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
 
-                {/* Side-by-side */}
+              {/* ═══ PROPOSAL REVIEW VIEW ═══ */}
+              {selectedProposal && (
                 <div
                   style={{
                     display: "flex",
-                    gap: 12,
+                    flexDirection: "column",
                     flex: 1,
                     overflow: "hidden",
+                    gap: 16,
+                    padding: "16px 24px 24px",
                   }}
                 >
-                  <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-                    <div style={labelStyle}>Current</div>
-                    <div style={{ ...paneStyle, borderColor: "rgba(255,255,255,0.08)" }}>
-                      {selectedProposal.current_soul}
-                    </div>
-                  </div>
-                  <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-                    <div style={{ ...labelStyle, color: "rgba(108,92,231,0.6)" }}>Proposed</div>
-                    <div style={{ ...paneStyle, background: "rgba(108,92,231,0.04)", borderColor: "rgba(108,92,231,0.2)" }}>
-                      {selectedProposal.proposed_soul}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, flexShrink: 0 }}>
-                  <motion.button
-                    whileHover={{ scale: 1.04 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => handleReject(selectedProposal.agent_id)}
-                    disabled={actionLoading}
+                  {/* Reason banner */}
+                  <div
                     style={{
-                      padding: "10px 22px",
-                      background: "rgba(255,71,87,0.1)",
-                      color: "#ff4757",
-                      border: "1px solid rgba(255,71,87,0.25)",
+                      padding: "12px 16px",
+                      background: "rgba(108,92,231,0.08)",
+                      border: "1px solid rgba(108,92,231,0.2)",
                       borderRadius: 10,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      cursor: actionLoading ? "default" : "pointer",
+                      flexShrink: 0,
                     }}
                   >
-                    Reject
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.04 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => handleApprove(selectedProposal.agent_id)}
-                    disabled={actionLoading}
-                    style={{
-                      padding: "10px 22px",
-                      background: "linear-gradient(135deg, #2ed573 0%, #1ea85a 100%)",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: 10,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      cursor: actionLoading ? "default" : "pointer",
-                      boxShadow: "0 4px 16px rgba(46,213,115,0.25)",
-                    }}
-                  >
-                    {actionLoading ? "Applying..." : "Approve"}
-                  </motion.button>
-                </div>
-              </div>
-            )}
-
-            {/* ═══ AGENT SOUL VIEWER ═══ */}
-            {selectedAgentId && !selectedProposal && (
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", gap: 12 }}>
-                <div style={{ ...labelStyle, marginBottom: 0 }}>SOUL.md</div>
-                {loadingSoul ? (
-                  <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <div
                       style={{
-                        width: 20,
-                        height: 20,
-                        border: "2px solid rgba(108,92,231,0.3)",
-                        borderTopColor: "#6c5ce7",
-                        borderRadius: "50%",
-                        animation: "spin 0.6s linear infinite",
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: "rgba(108,92,231,0.7)",
+                        textTransform: "uppercase",
+                        letterSpacing: 1,
+                        marginBottom: 4,
                       }}
-                    />
-                  </div>
-                ) : (
-                  <div style={{ ...paneStyle, flex: 1, borderColor: "rgba(108,92,231,0.15)" }}>
-                    {agentSoul}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* ═══ PROPOSALS LIST ═══ */}
-            {!selectedProposal && !selectedAgentId && tab === "proposals" && (
-              <div style={{ overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
-                {loading ? (
-                  <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
+                    >
+                      Proposed Change
+                    </div>
                     <div
                       style={{
-                        width: 20,
-                        height: 20,
-                        border: "2px solid rgba(108,92,231,0.3)",
-                        borderTopColor: "#6c5ce7",
-                        borderRadius: "50%",
-                        animation: "spin 0.6s linear infinite",
+                        fontSize: 13,
+                        color: "rgba(255,255,255,0.7)",
+                        lineHeight: 1.5,
                       }}
-                    />
-                  </div>
-                ) : proposals.length === 0 ? (
-                  <div style={{ textAlign: "center", color: "rgba(255,255,255,0.25)", padding: "48px 20px", fontSize: 13, lineHeight: 1.8 }}>
-                    <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.4 }}>&#9675;</div>
-                    No pending proposals.
-                    <br />
-                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.15)" }}>
-                      Ask your main agent to adjust an agent's specifications and it will appear here for your review.
-                    </span>
-                  </div>
-                ) : (
-                  proposals.map((proposal) => (
-                    <motion.button
-                      key={proposal.agent_id}
-                      whileHover={{ scale: 1.01, x: 4 }}
-                      whileTap={{ scale: 0.99 }}
-                      onClick={() => setSelectedProposal(proposal)}
-                      style={listItemStyle}
                     >
-                      <motion.div
-                        animate={{ boxShadow: ["0 0 4px rgba(108,92,231,0.4)", "0 0 10px rgba(108,92,231,0.8)", "0 0 4px rgba(108,92,231,0.4)"] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        style={{ width: 10, height: 10, borderRadius: "50%", background: "#6c5ce7", flexShrink: 0 }}
-                      />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600 }}>{proposal.agent_name}</div>
-                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: 2 }}>
-                          {proposal.reason}
-                        </div>
-                      </div>
-                      {proposal.timestamp && (
-                        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.2)", flexShrink: 0 }}>
-                          {relativeTime(proposal.timestamp)}
-                        </div>
-                      )}
-                      <div style={{ fontSize: 14, color: "rgba(255,255,255,0.2)", flexShrink: 0 }}>&#8594;</div>
-                    </motion.button>
-                  ))
-                )}
-              </div>
-            )}
-
-            {/* ═══ AGENTS LIST ═══ */}
-            {!selectedProposal && !selectedAgentId && tab === "agents" && (
-              <div style={{ overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
-                {installedAgents.length === 0 ? (
-                  <div style={{ textAlign: "center", color: "rgba(255,255,255,0.25)", padding: "48px 20px", fontSize: 13, lineHeight: 1.8 }}>
-                    <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.4 }}>&#9675;</div>
-                    No agents deployed yet.
-                    <br />
-                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.15)" }}>
-                      Deploy the bundle first to view your agents here.
-                    </span>
-                  </div>
-                ) : (
-                  installedAgents.map((agent) => (
-                    <motion.button
-                      key={agent.id}
-                      whileHover={{ scale: 1.01, x: 4 }}
-                      whileTap={{ scale: 0.99 }}
-                      onClick={() => loadAgentSoul(agent.id)}
-                      style={listItemStyle}
-                    >
+                      {selectedProposal.reason}
+                    </div>
+                    {selectedProposal.timestamp && (
                       <div
                         style={{
-                          width: 10,
-                          height: 10,
+                          fontSize: 10,
+                          color: "rgba(255,255,255,0.2)",
+                          marginTop: 6,
+                        }}
+                      >
+                        {relativeTime(selectedProposal.timestamp)}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Side-by-side */}
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 12,
+                      flex: 1,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+                      <div style={labelStyle}>Current</div>
+                      <div style={{ ...paneStyle, borderColor: "rgba(255,255,255,0.08)" }}>
+                        {selectedProposal.current_soul}
+                      </div>
+                    </div>
+                    <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+                      <div style={{ ...labelStyle, color: "rgba(108,92,231,0.6)" }}>Proposed</div>
+                      <div style={{ ...paneStyle, background: "rgba(108,92,231,0.04)", borderColor: "rgba(108,92,231,0.2)" }}>
+                        {selectedProposal.proposed_soul}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, flexShrink: 0 }}>
+                    <motion.button
+                      whileHover={{ scale: 1.04 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => handleReject(selectedProposal.agent_id)}
+                      disabled={actionLoading}
+                      style={{
+                        padding: "10px 22px",
+                        background: "rgba(255,71,87,0.1)",
+                        color: "#ff4757",
+                        border: "1px solid rgba(255,71,87,0.25)",
+                        borderRadius: 10,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        cursor: actionLoading ? "default" : "pointer",
+                      }}
+                    >
+                      Reject
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.04 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => handleApprove(selectedProposal.agent_id)}
+                      disabled={actionLoading}
+                      style={{
+                        padding: "10px 22px",
+                        background: "linear-gradient(135deg, #2ed573 0%, #1ea85a 100%)",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 10,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        cursor: actionLoading ? "default" : "pointer",
+                        boxShadow: "0 4px 16px rgba(46,213,115,0.25)",
+                      }}
+                    >
+                      {actionLoading ? "Applying..." : "Approve"}
+                    </motion.button>
+                  </div>
+                </div>
+              )}
+
+              {/* ═══ AGENT SOUL VIEWER ═══ */}
+              {selectedAgentId && !selectedProposal && (
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", gap: 12, padding: "16px 24px 24px" }}>
+                  <div style={{ ...labelStyle, marginBottom: 0 }}>SOUL.md</div>
+                  {loadingSoul ? (
+                    <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <div
+                        style={{
+                          width: 20,
+                          height: 20,
+                          border: "2px solid rgba(108,92,231,0.3)",
+                          borderTopColor: "#6c5ce7",
                           borderRadius: "50%",
-                          background: `rgb(${Math.round(agent.color[0] * 255)}, ${Math.round(agent.color[1] * 255)}, ${Math.round(agent.color[2] * 255)})`,
-                          boxShadow: `0 0 8px rgba(${Math.round(agent.color[0] * 255)}, ${Math.round(agent.color[1] * 255)}, ${Math.round(agent.color[2] * 255)}, 0.5)`,
-                          flexShrink: 0,
+                          animation: "spin 0.6s linear infinite",
                         }}
                       />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600 }}>{agent.name}</div>
-                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                          {agent.description}
+                    </div>
+                  ) : (
+                    <div style={{ ...paneStyle, flex: 1, borderColor: "rgba(108,92,231,0.15)" }}>
+                      {agentSoul}
+                    </div>
+                  )}
+                  {/* Nudge toward orchestrator-driven workflow */}
+                  <div
+                    style={{
+                      padding: "10px 14px",
+                      background: "rgba(108,92,231,0.06)",
+                      border: "1px solid rgba(108,92,231,0.12)",
+                      borderRadius: 10,
+                      fontSize: 11,
+                      color: "rgba(255,255,255,0.35)",
+                      lineHeight: 1.6,
+                      flexShrink: 0,
+                    }}
+                  >
+                    <span style={{ color: "rgba(108,92,231,0.7)", fontWeight: 600 }}>Want to adjust this agent?</span>{" "}
+                    Ask your orchestrator to propose changes — it will analyze performance and suggest optimized specifications for your review.
+                  </div>
+                </div>
+              )}
+
+              {/* ═══ PROPOSALS LIST ═══ */}
+              {!selectedProposal && !selectedAgentId && tab === "proposals" && (
+                <div style={{ overflowY: "auto", flex: 1, padding: "12px 24px 24px", display: "flex", flexDirection: "column", gap: 6 }}>
+                  {loading ? (
+                    <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
+                      <div
+                        style={{
+                          width: 20,
+                          height: 20,
+                          border: "2px solid rgba(108,92,231,0.3)",
+                          borderTopColor: "#6c5ce7",
+                          borderRadius: "50%",
+                          animation: "spin 0.6s linear infinite",
+                        }}
+                      />
+                    </div>
+                  ) : proposals.length === 0 ? (
+                    <div style={{ textAlign: "center", color: "rgba(255,255,255,0.25)", padding: "48px 20px", fontSize: 13, lineHeight: 1.8 }}>
+                      <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.4 }}>&#9675;</div>
+                      No pending proposals.
+                      <br />
+                      <span style={{ fontSize: 11, color: "rgba(255,255,255,0.15)" }}>
+                        When your main agent proposes specification changes, they'll appear here for your review.
+                      </span>
+                    </div>
+                  ) : (
+                    proposals.map((proposal) => (
+                      <motion.button
+                        key={proposal.agent_id}
+                        whileHover={{ scale: 1.01, x: 4 }}
+                        whileTap={{ scale: 0.99 }}
+                        onClick={() => setSelectedProposal(proposal)}
+                        style={listItemStyle}
+                      >
+                        <motion.div
+                          animate={{ boxShadow: ["0 0 4px rgba(108,92,231,0.4)", "0 0 10px rgba(108,92,231,0.8)", "0 0 4px rgba(108,92,231,0.4)"] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                          style={{ width: 10, height: 10, borderRadius: "50%", background: "#6c5ce7", flexShrink: 0 }}
+                        />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600 }}>{proposal.agent_name}</div>
+                          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: 2 }}>
+                            {proposal.reason}
+                          </div>
                         </div>
-                      </div>
-                      <div style={{ fontSize: 14, color: "rgba(255,255,255,0.2)", flexShrink: 0 }}>&#8594;</div>
-                    </motion.button>
-                  ))
-                )}
-              </div>
-            )}
+                        {proposal.timestamp && (
+                          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.2)", flexShrink: 0 }}>
+                            {relativeTime(proposal.timestamp)}
+                          </div>
+                        )}
+                        <div style={{ fontSize: 14, color: "rgba(255,255,255,0.2)", flexShrink: 0 }}>&#8594;</div>
+                      </motion.button>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {/* ═══ AGENTS LIST ═══ */}
+              {!selectedProposal && !selectedAgentId && tab === "agents" && (
+                <div style={{ overflowY: "auto", flex: 1, padding: "12px 24px 24px", display: "flex", flexDirection: "column", gap: 6 }}>
+                  {allAgents.map((agent) => {
+                    const r = Math.round(agent.color[0] * 255);
+                    const g = Math.round(agent.color[1] * 255);
+                    const b = Math.round(agent.color[2] * 255);
+                    return (
+                      <motion.button
+                        key={agent.id}
+                        whileHover={agent.isInstalled ? { scale: 1.01, x: 4 } : { scale: 1.005 }}
+                        whileTap={agent.isInstalled ? { scale: 0.99 } : {}}
+                        onClick={() => agent.isInstalled && loadAgentSoul(agent.id)}
+                        style={{
+                          ...listItemStyle,
+                          opacity: agent.isInstalled ? 1 : 0.45,
+                          cursor: agent.isInstalled ? "pointer" : "default",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: 10,
+                            height: 10,
+                            borderRadius: "50%",
+                            background: agent.isInstalled
+                              ? `rgb(${r}, ${g}, ${b})`
+                              : "rgba(255,255,255,0.15)",
+                            boxShadow: agent.isInstalled
+                              ? `0 0 8px rgba(${r}, ${g}, ${b}, 0.5)`
+                              : "none",
+                            flexShrink: 0,
+                          }}
+                        />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <span style={{ fontSize: 13, fontWeight: 600 }}>{agent.name}</span>
+                            {agent.isBonus && (
+                              <span style={{ fontSize: 9, color: "#ffa502", fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase" }}>Bonus</span>
+                            )}
+                            {!agent.isInstalled && (
+                              <span style={{ fontSize: 9, color: "rgba(255,255,255,0.25)", fontWeight: 600, letterSpacing: 0.5, textTransform: "uppercase" }}>Not deployed</span>
+                            )}
+                          </div>
+                          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: 2 }}>
+                            {agent.description}
+                          </div>
+                        </div>
+                        {agent.isInstalled && (
+                          <div style={{ fontSize: 14, color: "rgba(255,255,255,0.2)", flexShrink: 0 }}>&#8594;</div>
+                        )}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </motion.div>
-        </motion.div>
+        </>
       )}
     </AnimatePresence>
   );

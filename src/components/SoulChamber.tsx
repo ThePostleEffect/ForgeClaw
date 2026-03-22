@@ -15,6 +15,7 @@ import type { AgentTemplate } from "../lib/templates";
 interface SoulChamberProps {
   templates: AgentTemplate[];
   onSelectTemplate: (template: AgentTemplate) => void;
+  onCenterClick?: () => void;
 }
 
 function Scene({
@@ -22,11 +23,13 @@ function Scene({
   onSelectTemplate,
   rippleTrigger,
   orbPulse,
+  onCenterClick,
 }: {
   templates: AgentTemplate[];
   onSelectTemplate: (t: AgentTemplate) => void;
   rippleTrigger: number;
   orbPulse: number;
+  onCenterClick?: () => void;
 }) {
   return (
     <>
@@ -36,8 +39,8 @@ function Scene({
       <pointLight position={[5, 3, 5]} intensity={0.4} color="#1e90ff" />
       <pointLight position={[-5, -2, -5]} intensity={0.3} color="#9b59b6" />
 
-      {/* Central Orb */}
-      <CentralOrb pulse={orbPulse} />
+      {/* Central Orb — clickable to open Soul Witness */}
+      <CentralOrb pulse={orbPulse} onClick={onCenterClick} />
       <OrbRipple trigger={rippleTrigger} />
 
       {/* Orbiting template shards */}
@@ -80,7 +83,7 @@ function Scene({
   );
 }
 
-export default function SoulChamber({ templates, onSelectTemplate }: SoulChamberProps) {
+export default function SoulChamber({ templates, onSelectTemplate, onCenterClick }: SoulChamberProps) {
   const [rippleTrigger, setRippleTrigger] = useState(0);
   const [orbPulse, setOrbPulse] = useState(0);
 
@@ -121,6 +124,7 @@ export default function SoulChamber({ templates, onSelectTemplate }: SoulChamber
             onSelectTemplate={handleSelect}
             rippleTrigger={rippleTrigger}
             orbPulse={orbPulse}
+            onCenterClick={onCenterClick}
           />
         </Suspense>
       </Canvas>
